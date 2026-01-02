@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COMET</title>
+    <title>Loot Drop Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
@@ -25,7 +25,6 @@
             user-select: none;
         }
 
-        /* --- Animations & VFX --- */
         .bg-grid {
             background-size: 50px 50px;
             background-image: 
@@ -40,7 +39,7 @@
         .border-common { border-color: var(--rarity-common); }
         .text-common { color: var(--rarity-common); }
         .bg-common { background-color: var(--rarity-common); }
-
+        
         .border-rare { border-color: var(--rarity-rare); box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
         .text-rare { color: var(--rarity-rare); }
         .bg-rare { background-color: var(--rarity-rare); }
@@ -63,42 +62,24 @@
 
         @keyframes pulseMythic { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
 
-        /* Box Interactions */
         .animate-float { animation: float 3s ease-in-out infinite; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
 
         .shake-1 { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
         .shake-2 { animation: shakeHard 0.4s cubic-bezier(.36,.07,.19,.97) both; filter: brightness(1.2) sepia(1) hue-rotate(-50deg) saturate(3); }
 
-        @keyframes shake { 
-            10%, 90% { transform: translate3d(-1px, 0, 0); } 
-            20%, 80% { transform: translate3d(2px, 0, 0); } 
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 
-            40%, 60% { transform: translate3d(4px, 0, 0); } 
-        }
-        @keyframes shakeHard { 
-            0% { transform: scale(1); }
-            10%, 90% { transform: translate3d(-5px, 0, 0) rotate(-2deg) scale(1.1); } 
-            20%, 80% { transform: translate3d(5px, 0, 0) rotate(2deg) scale(1.1); } 
-            30%, 50%, 70% { transform: translate3d(-10px, 0, 0) rotate(-5deg) scale(1.1); } 
-            40%, 60% { transform: translate3d(10px, 0, 0) rotate(5deg) scale(1.1); } 
-        }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        @keyframes shakeHard { 10%, 90% { transform: translate3d(-5px, 0, 0) rotate(-2deg); } 20%, 80% { transform: translate3d(5px, 0, 0) rotate(2deg); } 30%, 50%, 70% { transform: translate3d(-10px, 0, 0) rotate(-5deg); } 40%, 60% { transform: translate3d(10px, 0, 0) rotate(5deg); } }
 
         .item-reveal-anim { animation: popReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         @keyframes popReveal { 0% { transform: scale(0) rotate(-45deg); opacity: 0; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
 
-        /* Sunburst */
         .sunburst {
             position: absolute; top: 50%; left: 50%; width: 200vmax; height: 200vmax;
             background: repeating-conic-gradient(from 0deg, rgba(255,255,255,0.03) 0deg 10deg, transparent 10deg 20deg);
             transform: translate(-50%, -50%); animation: spin 40s linear infinite; pointer-events: none; z-index: -1;
         }
         @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
-
-        /* UI Elements */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
 
         .shop-drawer { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .drawer-closed { transform: translateX(-100%); }
@@ -107,10 +88,8 @@
 </head>
 <body class="h-screen w-screen text-white relative overflow-hidden flex flex-col">
 
-    <!-- Background -->
     <div class="absolute inset-0 bg-grid z-0 opacity-30 pointer-events-none"></div>
 
-    <!-- Header -->
     <header class="relative z-30 flex justify-between items-center p-4 bg-slate-900/90 backdrop-blur border-b border-slate-700 h-20">
         <div class="flex items-center gap-4">
             <button id="shop-toggle" class="bg-cyan-600 hover:bg-cyan-500 text-white p-3 rounded-xl shadow-lg shadow-cyan-900/50 transition-all active:scale-95 group">
@@ -134,44 +113,27 @@
         </div>
     </header>
 
-    <!-- Shop Sidebar -->
     <aside id="shop-drawer" class="absolute top-20 left-0 bottom-0 w-80 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700 z-40 shop-drawer drawer-closed flex flex-col shadow-2xl">
         <div class="p-6 border-b border-slate-800">
             <h2 class="text-2xl font-['Black_Ops_One'] uppercase text-white"><i class="fa-solid fa-cart-shopping mr-2 text-cyan-500"></i> Box Shop</h2>
-            <p class="text-slate-400 text-sm mt-1">Spend coins to upgrade your drops.</p>
+            <p class="text-slate-400 text-sm mt-1">Upgrade your drop rates.</p>
         </div>
-        <div id="shop-list" class="flex-1 overflow-y-auto p-4 space-y-4">
-            <!-- Shop Items Injected Here -->
-        </div>
+        <div id="shop-list" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
     </aside>
 
-    <!-- Overlay for Shop -->
     <div id="shop-overlay" class="absolute inset-0 bg-black/50 z-30 hidden backdrop-blur-sm"></div>
 
-    <!-- Main Game Area -->
     <main class="flex-grow relative z-10 flex flex-col items-center justify-center">
         <div id="sunburst" class="sunburst hidden"></div>
 
-        <!-- Box / Opening State -->
         <div id="box-stage" class="relative flex flex-col items-center">
-            <!-- The Box -->
             <div id="box-container" class="cursor-pointer transition-all duration-100 p-10 select-none">
-                <div id="box-visual" class="text-9xl filter drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] animate-float transition-all">
-                    📦
-                </div>
+                <div id="box-visual" class="text-9xl filter drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] animate-float transition-all">📦</div>
             </div>
-
-            <div id="instruction" class="mt-4 text-slate-400 font-bold tracking-[0.3em] uppercase animate-pulse">
-                Tap to Open
-            </div>
-
-            <!-- Cost Indicator if re-opening same box -->
-            <div id="box-cost-display" class="mt-2 px-3 py-1 bg-slate-800/50 rounded-full text-xs text-slate-300 font-mono hidden">
-                Cost: <span class="text-yellow-400 font-bold">Free</span>
-            </div>
+            <div id="instruction" class="mt-4 text-slate-400 font-bold tracking-[0.3em] uppercase animate-pulse">Tap to Open</div>
+            <div id="box-cost-display" class="mt-2 px-3 py-1 bg-slate-800/50 rounded-full text-xs text-slate-300 font-mono hidden">Cost: <span class="text-yellow-400 font-bold">Free</span></div>
         </div>
 
-        <!-- Loot Reveal State (Hidden initially) -->
         <div id="reveal-stage" class="hidden flex flex-col items-center w-full max-w-md px-4">
             <div id="item-card" class="w-64 h-64 bg-slate-800 rounded-3xl border-4 flex flex-col items-center justify-center relative shadow-2xl mb-8 transition-all">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-2xl pointer-events-none"></div>
@@ -179,208 +141,131 @@
                 <h2 id="item-name" class="text-2xl font-black font-['Black_Ops_One'] uppercase text-center leading-none px-2 text-white drop-shadow-lg">Item Name</h2>
                 <span id="item-rarity-badge" class="mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-black/40 tracking-wider">Common</span>
             </div>
-
             <div class="flex gap-4 w-full">
                 <button id="btn-sell" class="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 py-4 rounded-xl flex flex-col items-center gap-1 group transition-all active:scale-95">
                     <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Sell Now</span>
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-coins text-yellow-400 group-hover:rotate-12 transition-transform"></i>
-                        <span id="sell-price" class="text-2xl font-bold font-mono text-white">10</span>
-                    </div>
+                    <div class="flex items-center gap-2"><i class="fa-solid fa-coins text-yellow-400 group-hover:rotate-12 transition-transform"></i><span id="sell-price" class="text-2xl font-bold font-mono text-white">10</span></div>
                 </button>
-
                 <button id="btn-collect" class="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 py-4 rounded-xl flex flex-col items-center justify-center gap-1 shadow-lg shadow-green-900/50 transition-all active:scale-95">
                     <span class="text-green-100 text-xs font-bold uppercase tracking-wider">Keep Item</span>
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-backpack text-white"></i>
-                        <span class="text-xl font-bold text-white uppercase">Collect</span>
-                    </div>
+                    <div class="flex items-center gap-2"><i class="fa-solid fa-backpack text-white"></i><span class="text-xl font-bold text-white uppercase">Collect</span></div>
                 </button>
             </div>
         </div>
     </main>
 
-    <!-- Inventory Modal -->
     <div id="inventory-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-700 w-full max-w-5xl h-[85vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden">
             <div class="p-6 bg-slate-800/50 border-b border-slate-700 flex justify-between items-center">
-                <div>
-                    <h2 class="text-3xl font-['Black_Ops_One'] uppercase text-white">Storage</h2>
-                    <p id="inv-count" class="text-slate-400 text-sm">0 Items collected</p>
-                </div>
-                <button id="close-inv" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition-colors">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
+                <div><h2 class="text-3xl font-['Black_Ops_One'] uppercase text-white">Storage</h2><p id="inv-count" class="text-slate-400 text-sm">0 Items collected</p></div>
+                <button id="close-inv" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-
-            <div id="inventory-grid" class="flex-1 overflow-y-auto p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 content-start">
-                <!-- Items injected here -->
-            </div>
+            <div id="inventory-grid" class="flex-1 overflow-y-auto p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 content-start"></div>
         </div>
     </div>
 
-    <!-- Scripts -->
     <script>
-        // --- CONFIGURATION ---
-        // Add more boxes here to extend the game!
         const BOX_TIERS = [
-            {
-                id: 'starter',
-                name: 'Cardboard Box',
-                cost: 0,
-                icon: '📦',
-                desc: 'Random junk from around',
-                // Thresholds: Common(50), Rare(85), Epic(98), Legendary(100)
-                rates: { common: 60, rare: 90, epic: 99, legendary: 100, mythic: 100 } 
-            },
-            {
-                id: 'silver',
-                name: 'Silver Case',
-                cost: 150,
-                icon: '💼',
-                desc: 'Better odds. Shiny finish.',
-                rates: { common: 20, rare: 70, epic: 95, legendary: 99.5, mythic: 100 }
-            },
-            {
-                id: 'gold',
-                name: 'Gold Chest',
-                cost: 600,
-                icon: '👑',
-                desc: 'Heart of Gold.',
-                rates: { common: 0, rare: 40, epic: 85, legendary: 98, mythic: 100 }
-            },
-            {
-                id: 'omega',
-                name: 'Comet Case',
-                cost: 2500,
-                icon: '💫',
-                desc: 'Pretty much inf money.',
-                rates: { common: 0, rare: 0, epic: 50, legendary: 90, mythic: 100 }
-            }
+            { id: 'starter', name: 'Rusty Crate', cost: 0, icon: '📦', desc: 'Free junk.', rates: { common: 60, rare: 90, epic: 99, legendary: 100, mythic: 100 } },
+            { id: 'silver', name: 'Silver Case', cost: 150, icon: '💼', desc: 'Better odds.', rates: { common: 20, rare: 70, epic: 95, legendary: 99.5, mythic: 100 } },
+            { id: 'gold', name: 'Gold Chest', cost: 600, icon: '👑', desc: 'High roller.', rates: { common: 0, rare: 40, epic: 85, legendary: 98, mythic: 100 } },
+            { id: 'omega', name: 'Omega Void', cost: 2500, icon: '🔮', desc: 'Pure chaos.', rates: { common: 0, rare: 0, epic: 50, legendary: 90, mythic: 100 } }
         ];
 
-        const SELL_VALUES = {
-            common: 10,
-            rare: 40,
-            epic: 250,
-            legendary: 1500,
-            mythic: 8000
-        };
+        const SELL_VALUES = { common: 10, rare: 40, epic: 250, legendary: 1500, mythic: 8000 };
 
         const ITEMS_DB = {
-            common: [
-                { name: "Broken Twig", icon: "fa-leaf" }, { name: "Grey Rock", icon: "fa-gem" }, 
-                { name: "Old Sock", icon: "fa-socks" }, { name: "Rusty Nail", icon: "fa-hammer" },
-                { name: "Empty Can", icon: "fa-trash-can" }
-            ],
-            rare: [
-                { name: "Steel Dagger", icon: "fa-khanda" }, { name: "Blue Potion", icon: "fa-flask" },
-                { name: "Silver Ring", icon: "fa-ring" }, { name: "Map Fragment", icon: "fa-map" }
-            ],
-            epic: [
-                { name: "Plasma Rifle", icon: "fa-gun" }, { name: "Cyber Visor", icon: "fa-vr-cardboard" },
-                { name: "Golden Chalice", icon: "fa-wine-glass" }, { name: "Hoverboard", icon: "fa-plane" }
-            ],
-            legendary: [
-                { name: "Excalibur", icon: "fa-gavel" }, { name: "Dragon Soul", icon: "fa-fire" },
-                { name: "Time Core", icon: "fa-clock" }
-            ],
-            mythic: [
-                { name: "THE GLITCH", icon: "fa-bug" }, { name: "Developer Key", icon: "fa-key" }
-            ]
+            common: [{ name: "Broken Twig", icon: "fa-leaf" }, { name: "Grey Rock", icon: "fa-gem" }, { name: "Old Sock", icon: "fa-socks" }, { name: "Rusty Nail", icon: "fa-hammer" }, { name: "Empty Can", icon: "fa-trash-can" }],
+            rare: [{ name: "Steel Dagger", icon: "fa-khanda" }, { name: "Blue Potion", icon: "fa-flask" }, { name: "Silver Ring", icon: "fa-ring" }, { name: "Map Fragment", icon: "fa-map" }],
+            epic: [{ name: "Plasma Rifle", icon: "fa-gun" }, { name: "Cyber Visor", icon: "fa-vr-cardboard" }, { name: "Golden Chalice", icon: "fa-wine-glass" }, { name: "Hoverboard", icon: "fa-plane" }],
+            legendary: [{ name: "Excalibur", icon: "fa-gavel" }, { name: "Dragon Soul", icon: "fa-fire" }, { name: "Time Core", icon: "fa-clock" }],
+            mythic: [{ name: "THE GLITCH", icon: "fa-bug" }, { name: "Developer Key", icon: "fa-key" }]
         };
 
-        // --- GAME ENGINE ---
         class Game {
             constructor() {
                 this.coins = 0;
                 this.inventory = [];
                 this.activeBoxId = 'starter';
+                this.clickStage = 0;
+                this.tempItem = null;
 
-                // State
-                this.clickStage = 0; // 0=Idle, 1=Shake, 2=RedShake, 3=Open
-                this.tempItem = null; // Item currently on reveal screen
-
-                // Bindings
+                this.loadGame(); // LOAD DATA ON START
                 this.bindUI();
                 this.renderShop();
                 this.updateUI();
             }
 
-            bindUI() {
-                // Main interaction
-                document.getElementById('box-container').addEventListener('click', () => this.handleBoxClick());
+            // --- DATA SAVING LOGIC ---
+            saveGame() {
+                const saveData = {
+                    coins: this.coins,
+                    inventory: this.inventory,
+                    activeBoxId: this.activeBoxId
+                };
+                localStorage.setItem('cometcase_save', JSON.stringify(saveData));
+            }
 
-                // Result Buttons
+            loadGame() {
+                const saved = localStorage.getItem('cometcase_save');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    this.coins = data.coins || 0;
+                    this.inventory = data.inventory || [];
+                    this.activeBoxId = data.activeBoxId || 'starter';
+                }
+            }
+
+            bindUI() {
+                document.getElementById('box-container').addEventListener('click', () => this.handleBoxClick());
                 document.getElementById('btn-collect').addEventListener('click', () => this.collectItem());
                 document.getElementById('btn-sell').addEventListener('click', () => this.sellCurrentItem());
-
-                // Inventory
                 document.getElementById('inventory-toggle').addEventListener('click', () => this.toggleInventory(true));
                 document.getElementById('close-inv').addEventListener('click', () => this.toggleInventory(false));
-
-                // Shop Drawer
-                const drawer = document.getElementById('shop-drawer');
-                const overlay = document.getElementById('shop-overlay');
-                const toggle = document.getElementById('shop-toggle');
-
+                
                 const toggleShop = () => {
+                    const drawer = document.getElementById('shop-drawer');
+                    const overlay = document.getElementById('shop-overlay');
                     const isOpen = drawer.classList.contains('drawer-open');
                     drawer.classList.toggle('drawer-open', !isOpen);
                     drawer.classList.toggle('drawer-closed', isOpen);
                     overlay.classList.toggle('hidden', isOpen);
                 };
 
-                toggle.addEventListener('click', toggleShop);
-                overlay.addEventListener('click', toggleShop);
+                document.getElementById('shop-toggle').addEventListener('click', toggleShop);
+                document.getElementById('shop-overlay').addEventListener('click', toggleShop);
             }
 
             updateUI() {
                 document.getElementById('coin-display').innerText = this.coins.toLocaleString();
                 document.getElementById('inv-badge').innerText = this.inventory.length;
                 document.getElementById('inv-badge').classList.toggle('hidden', this.inventory.length === 0);
-
-                // Update Box display if idle
+                
                 if (this.clickStage === 0) {
                     const box = BOX_TIERS.find(b => b.id === this.activeBoxId);
                     document.getElementById('current-box-name').innerText = box.name;
                     document.getElementById('box-visual').innerText = box.icon;
-
                     const costDisplay = document.getElementById('box-cost-display');
                     costDisplay.classList.remove('hidden');
-                    costDisplay.innerHTML = box.cost === 0 
-                        ? `<span class="text-green-400 font-bold uppercase">Free</span>` 
-                        : `Cost: <span class="text-yellow-400 font-bold">${box.cost}</span>`;
+                    costDisplay.innerHTML = box.cost === 0 ? `<span class="text-green-400 font-bold uppercase">Free</span>` : `Cost: <span class="text-yellow-400 font-bold">${box.cost}</span>`;
                 }
             }
 
             renderShop() {
                 const list = document.getElementById('shop-list');
                 list.innerHTML = '';
-
                 BOX_TIERS.forEach(box => {
                     const el = document.createElement('div');
                     el.className = `p-4 rounded-xl border border-slate-700 bg-slate-800/50 hover:bg-slate-700 transition-colors flex items-center justify-between cursor-pointer group`;
                     el.onclick = () => this.selectBox(box.id);
-
                     const isActive = this.activeBoxId === box.id;
-                    const borderClass = isActive ? 'border-cyan-500 ring-1 ring-cyan-500' : '';
                     if (isActive) el.classList.add('border-cyan-500', 'bg-slate-800');
-
                     el.innerHTML = `
                         <div class="flex items-center gap-4">
                             <div class="text-4xl group-hover:scale-110 transition-transform">${box.icon}</div>
-                            <div>
-                                <h3 class="font-bold text-white ${isActive ? 'text-cyan-400' : ''}">${box.name}</h3>
-                                <p class="text-xs text-slate-400">${box.desc}</p>
-                            </div>
+                            <div><h3 class="font-bold text-white ${isActive ? 'text-cyan-400' : ''}">${box.name}</h3><p class="text-xs text-slate-400">${box.desc}</p></div>
                         </div>
-                        <div class="text-right">
-                            <div class="font-mono font-bold ${box.cost === 0 ? 'text-green-400' : 'text-yellow-400'}">
-                                ${box.cost === 0 ? 'FREE' : box.cost}
-                            </div>
-                            ${isActive ? '<span class="text-[10px] uppercase font-bold text-cyan-500">Selected</span>' : ''}
-                        </div>
+                        <div class="text-right"><div class="font-mono font-bold ${box.cost === 0 ? 'text-green-400' : 'text-yellow-400'}">${box.cost === 0 ? 'FREE' : box.cost}</div></div>
                     `;
                     list.appendChild(el);
                 });
@@ -388,63 +273,33 @@
 
             selectBox(id) {
                 this.activeBoxId = id;
-                this.clickStage = 0; // Reset
-                this.renderShop(); // Refresh active state
+                this.clickStage = 0;
+                this.renderShop();
+                this.saveGame(); // SAVE active box
                 this.updateUI();
-
-                // Close drawer logic could go here if desired
-                document.getElementById('shop-drawer').classList.remove('drawer-open');
-                document.getElementById('shop-drawer').classList.add('drawer-closed');
-                document.getElementById('shop-overlay').classList.add('hidden');
-
-                // Reset Visuals
-                const visual = document.getElementById('box-visual');
-                visual.style.transform = "scale(0)";
-                setTimeout(() => visual.style.transform = "scale(1)", 100);
             }
 
             handleBoxClick() {
                 const boxConfig = BOX_TIERS.find(b => b.id === this.activeBoxId);
                 const visual = document.getElementById('box-visual');
-                const instruct = document.getElementById('instruction');
-
-                // Check Cost on first click
-                if (this.clickStage === 0) {
-                    if (this.coins < boxConfig.cost) {
-                        this.createFloatText(window.innerWidth/2, window.innerHeight/2, "Not Enough Coins!", "red");
-                        return;
-                    }
-                    // Deduct immediately or at end? Typically start is better to prevent glitches
-                    if(boxConfig.cost > 0) {
-                        this.coins -= boxConfig.cost;
-                        this.updateUI();
-                        this.createFloatText(window.innerWidth/2, window.innerHeight/2 - 50, `-${boxConfig.cost}`, "yellow");
-                    }
+                if (this.clickStage === 0 && this.coins < boxConfig.cost) return;
+                
+                if (this.clickStage === 0 && boxConfig.cost > 0) {
+                    this.coins -= boxConfig.cost;
+                    this.updateUI();
+                    this.saveGame(); // SAVE coins after purchase
                 }
 
                 this.clickStage++;
-
-                // Animation Logic
                 visual.classList.remove('shake-1', 'shake-2', 'animate-float');
-                void visual.offsetWidth; // Force Reflow
+                void visual.offsetWidth;
 
-                if (this.clickStage === 1) {
-                    visual.classList.add('shake-1');
-                    instruct.innerText = "Tap Again!";
-                    this.playSound(300);
-                } 
-                else if (this.clickStage === 2) {
-                    visual.classList.add('shake-2');
-                    instruct.innerText = "ONE MORE!";
-                    this.playSound(500);
-                } 
-                else if (this.clickStage >= 3) {
-                    this.openBox(boxConfig);
-                }
+                if (this.clickStage === 1) visual.classList.add('shake-1');
+                else if (this.clickStage === 2) visual.classList.add('shake-2');
+                else if (this.clickStage >= 3) this.openBox(boxConfig);
             }
 
             openBox(boxConfig) {
-                // Determine Rarity
                 const rand = Math.random() * 100;
                 let rarity = 'common';
                 if (rand > boxConfig.rates.legendary) rarity = 'mythic';
@@ -452,190 +307,73 @@
                 else if (rand > boxConfig.rates.rare) rarity = 'epic';
                 else if (rand > boxConfig.rates.common) rarity = 'rare';
 
-                // Get Item
                 const pool = ITEMS_DB[rarity];
                 const item = pool[Math.floor(Math.random() * pool.length)];
+                this.tempItem = { ...item, rarity, id: Date.now() + Math.random() };
 
-                this.tempItem = { ...item, rarity, id: Date.now() };
-
-                // VFX
-                this.playSound(800, 'reveal');
-                this.createParticles(window.innerWidth/2, window.innerHeight/2, rarity);
-
-                // Switch Screens
                 document.getElementById('box-stage').classList.add('hidden');
                 document.getElementById('reveal-stage').classList.remove('hidden');
-
-                // Render Item Card
+                
                 const card = document.getElementById('item-card');
-                const icon = document.getElementById('item-icon');
-                const name = document.getElementById('item-name');
-                const badge = document.getElementById('item-rarity-badge');
-
-                // Reset classes
                 card.className = `w-64 h-64 rounded-3xl border-4 flex flex-col items-center justify-center relative shadow-2xl mb-8 item-reveal-anim border-${rarity} bg-slate-900`;
-
-                icon.className = `fa-solid ${item.icon} text-8xl mb-4 drop-shadow-md text-${rarity}`;
-                name.innerText = item.name;
-                name.className = `text-2xl font-black font-['Black_Ops_One'] uppercase text-center leading-none px-2 drop-shadow-lg text-${rarity}`;
-
-                badge.className = `mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-${rarity} text-slate-900`;
-                badge.innerText = rarity;
-
-                // Update Sell Button Price
+                document.getElementById('item-icon').className = `fa-solid ${item.icon} text-8xl mb-4 text-${rarity}`;
+                document.getElementById('item-name').innerText = item.name;
+                document.getElementById('item-name').className = `text-2xl font-black font-['Black_Ops_One'] uppercase text-center text-${rarity}`;
+                document.getElementById('item-rarity-badge').className = `mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-${rarity} text-slate-900`;
+                document.getElementById('item-rarity-badge').innerText = rarity;
                 document.getElementById('sell-price').innerText = SELL_VALUES[rarity];
 
-                // Sunburst for good items
-                const sunburst = document.getElementById('sunburst');
-                if (['epic', 'legendary', 'mythic'].includes(rarity)) {
-                    sunburst.classList.remove('hidden');
-                    sunburst.style.color = `var(--rarity-${rarity})`;
-                }
+                if (['epic', 'legendary', 'mythic'].includes(rarity)) document.getElementById('sunburst').classList.remove('hidden');
             }
 
             collectItem() {
                 this.inventory.push(this.tempItem);
-                this.createFloatText(window.innerWidth/2, window.innerHeight - 100, "Collected!", "lime");
+                this.saveGame(); // SAVE inventory
                 this.resetStage();
             }
 
             sellCurrentItem() {
-                const val = SELL_VALUES[this.tempItem.rarity];
-                this.coins += val;
-                this.playSound(1000, 'coin');
-                this.createFloatText(window.innerWidth/2, window.innerHeight - 100, `+${val} Coins`, "yellow");
+                this.coins += SELL_VALUES[this.tempItem.rarity];
+                this.saveGame(); // SAVE coins
                 this.resetStage();
             }
 
             resetStage() {
                 this.clickStage = 0;
-                this.tempItem = null;
                 document.getElementById('reveal-stage').classList.add('hidden');
                 document.getElementById('box-stage').classList.remove('hidden');
                 document.getElementById('sunburst').classList.add('hidden');
-                document.getElementById('instruction').innerText = "TAP TO OPEN";
-
-                // Reset Box Visual
-                const visual = document.getElementById('box-visual');
-                visual.classList.remove('shake-1', 'shake-2');
-                visual.classList.add('animate-float');
-
+                document.getElementById('box-visual').classList.add('animate-float');
                 this.updateUI();
             }
 
             toggleInventory(show) {
                 const modal = document.getElementById('inventory-modal');
                 const grid = document.getElementById('inventory-grid');
-
                 if (show) {
                     modal.classList.remove('hidden');
-                    document.getElementById('inv-count').innerText = `${this.inventory.length} items collected`;
-
+                    document.getElementById('inv-count').innerText = `${this.inventory.length} items`;
                     grid.innerHTML = '';
-
-                    // Sorting: Rarity Descending
                     const rarityOrder = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
                     const sorted = [...this.inventory].sort((a,b) => rarityOrder[b.rarity] - rarityOrder[a.rarity]);
-
-                    if (sorted.length === 0) {
-                        grid.innerHTML = `<div class="col-span-full text-center text-slate-500 mt-10">Inventory is empty.</div>`;
-                        return;
-                    }
-
                     sorted.forEach(item => {
                         const el = document.createElement('div');
-                        const price = SELL_VALUES[item.rarity];
-                        el.className = `relative aspect-square bg-slate-800/50 rounded-xl border-2 border-${item.rarity} flex flex-col items-center justify-center p-2 group hover:bg-slate-800 transition-colors`;
-                        el.innerHTML = `
-                            <i class="fa-solid ${item.icon} text-3xl mb-2 text-${item.rarity}"></i>
-                            <span class="text-[10px] font-bold text-slate-300 text-center leading-tight mb-6">${item.name}</span>
-
-                            <button class="absolute bottom-2 left-2 right-2 bg-slate-700 hover:bg-green-600 text-white text-xs font-bold py-1 rounded transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100" onclick="game.sellFromInventory(${item.id})">
-                                <span class="text-yellow-400">$</span> ${price}
-                            </button>
-                        `;
+                        el.className = `relative aspect-square bg-slate-800/50 rounded-xl border-2 border-${item.rarity} flex flex-col items-center justify-center p-2 group`;
+                        el.innerHTML = `<i class="fa-solid ${item.icon} text-3xl mb-2 text-${item.rarity}"></i><span class="text-[10px] font-bold text-slate-300 text-center">${item.name}</span><button class="absolute bottom-2 left-2 right-2 bg-slate-700 hover:bg-red-600 text-white text-[10px] py-1 rounded opacity-0 group-hover:opacity-100" onclick="game.sellFromInventory(${item.id})">Sell $${SELL_VALUES[item.rarity]}</button>`;
                         grid.appendChild(el);
                     });
-
-                } else {
-                    modal.classList.add('hidden');
-                }
+                } else modal.classList.add('hidden');
             }
 
             sellFromInventory(itemId) {
                 const idx = this.inventory.findIndex(i => i.id === itemId);
                 if (idx > -1) {
-                    const item = this.inventory[idx];
-                    const val = SELL_VALUES[item.rarity];
-                    this.coins += val;
-                    this.inventory.splice(idx, 1); // Remove
-
-                    this.playSound(1000, 'coin');
-
-                    // Re-render inventory
+                    this.coins += SELL_VALUES[this.inventory[idx].rarity];
+                    this.inventory.splice(idx, 1);
+                    this.saveGame(); // SAVE after inventory sell
                     this.toggleInventory(true); 
                     this.updateUI();
                 }
-            }
-
-            // --- VFX HELPERS ---
-            createFloatText(x, y, text, color) {
-                const el = document.createElement('div');
-                el.innerText = text;
-                el.className = `fixed font-black text-2xl text-${color}-400 pointer-events-none z-50 drop-shadow-md`;
-                el.style.left = x + 'px';
-                el.style.top = y + 'px';
-                document.body.appendChild(el);
-
-                el.animate([
-                    { transform: 'translate(-50%, 0)', opacity: 1 },
-                    { transform: 'translate(-50%, -100px)', opacity: 0 }
-                ], { duration: 1000, easing: 'ease-out' }).onfinish = () => el.remove();
-            }
-
-            createParticles(x, y, rarity) {
-                const count = 30;
-                const colors = {
-                    common: '#94a3b8', rare: '#3b82f6', epic: '#a855f7', 
-                    legendary: '#eab308', mythic: '#ef4444'
-                };
-                const color = colors[rarity];
-
-                for(let i=0; i<count; i++) {
-                    const p = document.createElement('div');
-                    p.style.cssText = `position:fixed; left:${x}px; top:${y}px; width:8px; height:8px; background:${color}; border-radius:50%; z-index:100; pointer-events:none;`;
-                    document.body.appendChild(p);
-
-                    const angle = Math.random() * Math.PI * 2;
-                    const vel = Math.random() * 200 + 50;
-                    const tx = Math.cos(angle) * vel;
-                    const ty = Math.sin(angle) * vel;
-
-                    p.animate([
-                        { transform: 'translate(0,0) scale(1)', opacity:1 },
-                        { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity:0 }
-                    ], { duration: 800 + Math.random()*200 }).onfinish = () => p.remove();
-                }
-            }
-
-            playSound(freq, type) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContext) return;
-                const ctx = new AudioContext();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-
-                osc.type = type === 'coin' ? 'sine' : 'triangle';
-                osc.frequency.setValueAtTime(freq, ctx.currentTime);
-                if (type === 'coin') osc.frequency.exponentialRampToValueAtTime(freq*2, ctx.currentTime + 0.1);
-
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.3);
             }
         }
 
