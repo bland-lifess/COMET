@@ -182,6 +182,113 @@
             mythic: [{ name: "THE GLITCH", icon: "fa-bug" }, { name: "Developer Key", icon: "fa-key" }]
         };
 
+        // Sound System
+        class SoundFX {
+            constructor() {
+                this.audioContext = null;
+            }
+
+            init() {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playTap(intensity = 1) {
+                this.init();
+                const ctx = this.audioContext;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.frequency.setValueAtTime(400 + (intensity * 200), ctx.currentTime);
+                osc.type = 'square';
+                
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.1);
+            }
+
+            playOpen(rarity) {
+                this.init();
+                const ctx = this.audioContext;
+                const rarityPitch = { common: 1, rare: 1.2, epic: 1.5, legendary: 1.8, mythic: 2.2 };
+                const multiplier = rarityPitch[rarity] || 1;
+                
+                // Multiple oscillators for rich sound
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        
+                        osc.frequency.setValueAtTime(300 * multiplier + (i * 100), ctx.currentTime);
+                        osc.type = 'sine';
+                        
+                        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                        
+                        osc.start(ctx.currentTime);
+                        osc.stop(ctx.currentTime + 0.4);
+                    }, i * 50);
+                }
+            }
+
+            playCoins(isGain = true) {
+                this.init();
+                const ctx = this.audioContext;
+                
+                for (let i = 0; i < 2; i++) {
+                    setTimeout(() => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        
+                        if (isGain) {
+                            osc.frequency.setValueAtTime(800 + (i * 200), ctx.currentTime);
+                        } else {
+                            osc.frequency.setValueAtTime(600 - (i * 150), ctx.currentTime);
+                        }
+                        osc.type = 'sine';
+                        
+                        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+                        
+                        osc.start(ctx.currentTime);
+                        osc.stop(ctx.currentTime + 0.15);
+                    }, i * 40);
+                }
+            }
+
+            playPurchase() {
+                this.init();
+                const ctx = this.audioContext;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.frequency.setValueAtTime(600, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.2);
+                osc.type = 'triangle';
+                
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+                
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.2);
+            }
+        }
+
         class Game {
             constructor() {
                 this.coins = 0;
@@ -288,9 +395,11 @@
                     this.coins -= boxConfig.cost;
                     this.updateUI();
                     this.saveGame(); // SAVE coins after purchase
+                    soundFX.playPurchase(); // Play purchase sound
                 }
 
                 this.clickStage++;
+                soundFX.playTap(this.clickStage); // Play tap sound with increasing intensity
                 visual.classList.remove('shake-1', 'shake-2', 'animate-float');
                 void visual.offsetWidth;
 
@@ -310,6 +419,8 @@
                 const pool = ITEMS_DB[rarity];
                 const item = pool[Math.floor(Math.random() * pool.length)];
                 this.tempItem = { ...item, rarity, id: Date.now() + Math.random() };
+
+                soundFX.playOpen(rarity); // Play opening sound based on rarity
 
                 document.getElementById('box-stage').classList.add('hidden');
                 document.getElementById('reveal-stage').classList.remove('hidden');
@@ -334,6 +445,7 @@
 
             sellCurrentItem() {
                 this.coins += SELL_VALUES[this.tempItem.rarity];
+                soundFX.playCoins(true); // Play coin gain sound
                 this.saveGame(); // SAVE coins
                 this.resetStage();
             }
@@ -359,7 +471,7 @@
                     sorted.forEach(item => {
                         const el = document.createElement('div');
                         el.className = `relative aspect-square bg-slate-800/50 rounded-xl border-2 border-${item.rarity} flex flex-col items-center justify-center p-2 group`;
-                        el.innerHTML = `<i class="fa-solid ${item.icon} text-3xl mb-2 text-${item.rarity}"></i><span class="text-[10px] font-bold text-slate-300 text-center">${item.name}</span><button class="absolute bottom-2 left-2 right-2 bg-slate-700 hover:bg-red-600 text-white text-[10px] py-1 rounded opacity-0 group-hover:opacity-100" onclick="game.sellFromInventory(${item.id})">Sell $${SELL_VALUES[item.rarity]}</button>`;
+                        el.innerHTML = `<i class="fa-solid ${item.icon} text-3xl mb-2 text-${item.rarity}"></i><span class="text-[10px] font-bold text-slate-300 text-center">${item.name}</span><button class="absolute bottom-2 left-2 right-2 bg-slate-700 hover:bg-red-600 text-white text-[10px] py-1 rounded opacity-0 group-hover:opacity-100" onclick="game.sellFromInventory(${item.id})">Sell ${SELL_VALUES[item.rarity]}</button>`;
                         grid.appendChild(el);
                     });
                 } else modal.classList.add('hidden');
@@ -369,6 +481,7 @@
                 const idx = this.inventory.findIndex(i => i.id === itemId);
                 if (idx > -1) {
                     this.coins += SELL_VALUES[this.inventory[idx].rarity];
+                    soundFX.playCoins(true); // Play coin gain sound
                     this.inventory.splice(idx, 1);
                     this.saveGame(); // SAVE after inventory sell
                     this.toggleInventory(true); 
@@ -377,6 +490,7 @@
             }
         }
 
+        const soundFX = new SoundFX();
         const game = new Game();
     </script>
 </body>
