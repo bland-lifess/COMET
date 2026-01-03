@@ -17,4 +17,5 @@ Upgrade your Luck: Once you have enough coins, open the side shop and buy a bett
 Inventory: Open your backpack to see everything you've collected.
 
 more updates incoming
+
 Developed by bland-lifess
