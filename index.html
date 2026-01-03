@@ -84,6 +84,27 @@
         .shop-drawer { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .drawer-closed { transform: translateX(-100%); }
         .drawer-open { transform: translateX(0); }
+
+        .music-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .music-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6); }
+        .music-btn.playing { animation: musicPulse 2s infinite; }
+        @keyframes musicPulse { 0%, 100% { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); } 50% { box-shadow: 0 4px 25px rgba(102, 126, 234, 0.8); } }
     </style>
 </head>
 <body class="h-screen w-screen text-white relative overflow-hidden flex flex-col">
@@ -164,6 +185,10 @@
         </div>
     </div>
 
+    <button id="music-toggle" class="music-btn" title="Toggle Music">
+        <i class="fa-solid fa-music text-white text-xl"></i>
+    </button>
+
     <script>
         const BOX_TIERS = [
             { id: 'starter', name: 'Cardboard Box', cost: 0, icon: '📦', desc: 'Random stuff from who knows where.', rates: { common: 60, rare: 90, epic: 99, legendary: 100, mythic: 100 } },
@@ -181,6 +206,91 @@
             legendary: [{ name: "Excalibur", icon: "fa-gavel" }, { name: "Dragon Soul", icon: "fa-fire" }, { name: "Time Core", icon: "fa-clock" }],
             mythic: [{ name: "THE GLITCH", icon: "fa-bug" }, { name: "Developer Key", icon: "fa-key" }]
         };
+
+        // Background Music System
+        class BackgroundMusic {
+            constructor() {
+                this.audioContext = null;
+                this.isPlaying = false;
+                this.masterGain = null;
+                this.oscillators = [];
+                this.musicInterval = null;
+                
+                // Chord progression (I-V-vi-IV in C major)
+                this.chords = [
+                    [261.63, 329.63, 392.00], // C major
+                    [392.00, 493.88, 587.33], // G major
+                    [440.00, 523.25, 659.25], // A minor
+                    [349.23, 440.00, 523.25]  // F major
+                ];
+                this.currentChordIndex = 0;
+            }
+
+            init() {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.masterGain = this.audioContext.createGain();
+                    this.masterGain.connect(this.audioContext.destination);
+                    this.masterGain.gain.value = 0.08; // Low volume for background
+                }
+            }
+
+            start() {
+                this.init();
+                if (this.isPlaying) return;
+                this.isPlaying = true;
+                
+                document.getElementById('music-toggle').classList.add('playing');
+                
+                this.playChord();
+                this.musicInterval = setInterval(() => {
+                    this.currentChordIndex = (this.currentChordIndex + 1) % this.chords.length;
+                    this.playChord();
+                }, 2000); // Change chord every 2 seconds
+            }
+
+            playChord() {
+                const ctx = this.audioContext;
+                const chord = this.chords[this.currentChordIndex];
+                
+                chord.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(this.masterGain);
+                    
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                    osc.type = 'sine';
+                    
+                    // Fade in and out
+                    gain.gain.setValueAtTime(0, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime + 1.5);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 2);
+                    
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 2);
+                });
+            }
+
+            stop() {
+                this.isPlaying = false;
+                document.getElementById('music-toggle').classList.remove('playing');
+                if (this.musicInterval) {
+                    clearInterval(this.musicInterval);
+                    this.musicInterval = null;
+                }
+            }
+
+            toggle() {
+                if (this.isPlaying) {
+                    this.stop();
+                } else {
+                    this.start();
+                }
+            }
+        }
 
         // Sound System
         class SoundFX {
@@ -329,6 +439,7 @@
                 document.getElementById('btn-sell').addEventListener('click', () => this.sellCurrentItem());
                 document.getElementById('inventory-toggle').addEventListener('click', () => this.toggleInventory(true));
                 document.getElementById('close-inv').addEventListener('click', () => this.toggleInventory(false));
+                document.getElementById('music-toggle').addEventListener('click', () => bgMusic.toggle());
                 
                 const toggleShop = () => {
                     const drawer = document.getElementById('shop-drawer');
@@ -490,6 +601,7 @@
             }
         }
 
+        const bgMusic = new BackgroundMusic();
         const soundFX = new SoundFX();
         const game = new Game();
     </script>
