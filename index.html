@@ -362,7 +362,7 @@
             rare: [{ name: "Steel Dagger", icon: "fa-khanda" }, { name: "Blue Potion", icon: "fa-flask" }, { name: "Silver Ring", icon: "fa-ring" }, { name: "Map Fragment", icon: "fa-map" }],
             epic: [{ name: "Plasma Rifle", icon: "fa-gun" }, { name: "Cyber Visor", icon: "fa-vr-cardboard" }, { name: "Golden Chalice", icon: "fa-wine-glass" }, { name: "Hoverboard", icon: "fa-plane" }],
             legendary: [{ name: "Excalibur", icon: "fa-gavel" }, { name: "Dragon Soul", icon: "fa-fire" }, { name: "Royal Crown", icon: "fa-web-awesome"}, { name: "Time Core", icon: "fa-clock" }],
-            mythic: [{ name: "THE GLITCH", icon: "fa-bug" }, { name: "⌬"}, { name: "Developer Key", icon: "fa-key" }]
+            mythic: [{ name: "THE GLITCH", icon: "fa-bug" }, { name: "Elizabeth, Destroyer of Worlds", icon: "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHBkeWE2OHFxNWFzZHhubTQ0bWI5aXFlYmw2cjNvZjFuaXd0YXhhMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/K62rSDUnPitOgRp1eJ/giphy.gif"}, { name: "Developer Key", icon: "fa-key" }]
         };
 
         // Codes System
@@ -664,7 +664,7 @@
                     setTimeout(() => {
                         const coin = document.createElement('div');
                         coin.className = 'coin-burst';
-                        coin.textContent = '💰';
+                        coin.textContent = '💵';
                         coin.style.left = centerX + (Math.random() - 0.5) * 100 + 'px';
                         coin.style.top = centerY + 'px';
                         document.body.appendChild(coin);
@@ -962,7 +962,19 @@
                 
                 const card = document.getElementById('item-card');
                 card.className = `w-64 h-64 rounded-3xl border-4 flex flex-col items-center justify-center relative shadow-2xl mb-8 item-reveal-anim border-${rarity} bg-slate-900`;
-                document.getElementById('item-icon').className = `fa-solid ${item.icon} text-8xl mb-4 text-${rarity}`;
+                
+                // Handle icon (Font Awesome or Image URL)
+                const iconEl = document.getElementById('item-icon');
+                if (item.icon && item.icon.startsWith('http')) {
+                    // It's an image URL
+                    iconEl.className = '';
+                    iconEl.innerHTML = `<img src="${item.icon}" class="w-32 h-32 object-contain mb-4 drop-shadow-md transition-transform hover:scale-110" style="filter: drop-shadow(0 0 20px var(--rarity-${rarity}));" />`;
+                } else {
+                    // It's a Font Awesome icon
+                    iconEl.innerHTML = '';
+                    iconEl.className = `fa-solid ${item.icon} text-8xl mb-4 text-${rarity}`;
+                }
+                
                 document.getElementById('item-name').innerText = item.name;
                 document.getElementById('item-name').className = `text-2xl font-black font-['Black_Ops_One'] uppercase text-center text-${rarity}`;
                 document.getElementById('item-rarity-badge').className = `mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-${rarity} text-slate-900`;
@@ -1008,7 +1020,16 @@
                     sorted.forEach(item => {
                         const el = document.createElement('div');
                         el.className = `relative aspect-square bg-slate-800/50 rounded-xl border-2 border-${item.rarity} flex flex-col items-center justify-center p-2 group`;
-                        el.innerHTML = `<i class="fa-solid ${item.icon} text-3xl mb-2 text-${item.rarity}"></i><span class="text-[10px] font-bold text-slate-300 text-center">${item.name}</span><button class="absolute bottom-2 left-2 right-2 bg-slate-700 hover:bg-red-600 text-white text-[10px] py-1 rounded opacity-0 group-hover:opacity-100" onclick="game.sellFromInventory(${item.id})">Sell ${SELL_VALUES[item.rarity]}</button>`;
+                        
+                        // Handle icon display (Font Awesome or Image URL)
+                        let iconHTML = '';
+                        if (item.icon && item.icon.startsWith('http')) {
+                            iconHTML = `<img src="${item.icon}" class="w-12 h-12 object-contain mb-2" style="filter: drop-shadow(0 0 8px var(--rarity-${item.rarity}));" />`;
+                        } else {
+                            iconHTML = `<i class="fa-solid ${item.icon} text-3xl mb-2 text-${item.rarity}"></i>`;
+                        }
+                        
+                        el.innerHTML = `${iconHTML}<span class="text-[10px] font-bold text-slate-300 text-center">${item.name}</span><button class="absolute bottom-2 left-2 right-2 bg-slate-700 hover:bg-red-600 text-white text-[10px] py-1 rounded opacity-0 group-hover:opacity-100" onclick="game.sellFromInventory(${item.id})">Sell ${SELL_VALUES[item.rarity]}</button>`;
                         grid.appendChild(el);
                     });
                 } else modal.classList.add('hidden');
