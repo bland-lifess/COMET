@@ -8,7 +8,7 @@ https://bland-lifess.github.io/COMET/
 
 🎮 How to Play
 
-Open the Starter Box: The Rusty Crate is free! Tap it 3 times to reveal your loot.
+Open the Starter Box: Cardboard boxes are free. Tap them 3 times to reveal your loot.
 
 Collect or Sell: If you get an item you want to keep, Collect it to keep it in your inventory. If you need money, sell it.
 
@@ -16,5 +16,5 @@ Upgrade your Luck: Once you have enough coins, open the side shop and buy a bett
 
 Inventory: Open your backpack to see everything you've collected.
 
-
+more updates incoming
 Developed by bland-lifess
